@@ -3,12 +3,12 @@ import json
 import sys
 import regex
 
-#re Multiline comments
-#\/\*(.*?)\*\/
-#\/\*([\S\s]*?)\*\/
+# re Multiline comments
+# \/\*(.*?)\*\/
+# \/\*([\S\s]*?)\*\/
 
-#re Singleline comments
-#\/\/(.*?)\n
+# re Singleline comments
+# \/\/(.*?)\n
 config_path = "config.json"
 cpp_path = "input.cpp"
 
@@ -16,19 +16,19 @@ pattern_if = r"if(\s*?)\((.*?)\)(\s*?)\{"
 pattern_else = r"(?<=if\s*\((.*?)\)\s*\{([\s\S]*?)\}(\s*?))else\s*\{"
 pattern_elif = r"(?<=if\s*\((.*?)\)\s*\{([\s\S]*?)\}(\s*?))else if\s*\{"
 
-#CHANGE: "Do-Schleife" aus REQs entfernen
+# CHANGE: "Do-Schleife" aus REQs entfernen
 pattern_for = r"for(\s*?)\((.*?)\)(\s*?)\{"
 pattern_while = r"while(\s*?)\((.*?)\)(\s*?)\{"
 pattern_do_while = r"do\s*\{(?=([\s\S]*?)\}\s*while\s*\(([\s\S]*?)\);)"
 
 
 pattern_switch = r"switch(\s*?)\((.*?)\)(\s*?)\{"
-pattern_switch_case_default = r"switch(\s*?)\((.*?)\)(\s*?)\{\s*(case\s*(.*?):(.*?);)+\s*default:(.*?);\s*\}"
-pattern_case = r"case\s*(.*?):((?=(.*?);\s*default:(.*?);+\s*\})|(?=(.*?);\s*case(.*?):(.*?);))"
+pattern_switch_case_default = r"switch(\s*?)\((.*?)\)(\s*?)\{\s*(case\s*(.*?)"\
+    r":(.*?);)+\s*default:(.*?);\s*\}"
+pattern_case = r"case\s*(.*?):((?=(.*?);\s*default:(.*?);+\s*\})|(?=(.*?);\s*"\
+    "case(.*?):(.*?);))"
 pattern_default = r"default:(?=(.*?);+\s*\})"
-
-
-
+print(pattern_case)
 patterns = {
     1: {"a": pattern_if,
         "b": pattern_else,
@@ -40,37 +40,35 @@ patterns = {
         "b": pattern_case,
         "c": pattern_default}}
 
-class Config:
 
+class Config:
     def readConfig(self):
         with open(config_path) as json_file:
             try:
                 data = json.load(json_file)
-                self.detect = data["detect"]
-                
-            except:
-                #2.2.2.5_Konfigurationsdatei#REAL
+                self.detect = data["detect"]               
+            except Exception:
+                # 2.2.2.5_Konfigurationsdatei#REAL
                 sys.exit("[Error] Could not load JSON File")
+
 
 class Analysis:
 
     def __init__(self, detect):
         self.detect = detect
-    
-    
+
     def readCPP(self):
         with open(cpp_path, "r") as cpp_file:
             self.cpp_content = cpp_file.read()
         
-    
     def detectCommentedCode(self):
         
-        #For /* XYZ */ structures
-        pattern1 = regex.compile(r"\/\*(.*?)\*\/", regex.DOTALL) 
+        # For /* XYZ */ structures
+        pattern1 = regex.compile(r"\/\*(.*?)\*\/", regex.DOTALL)
         result1 = regex.finditer(pattern1, self.cpp_content)
 
-        #For //XYZ structures
-        pattern2 = regex.compile(r"\/\/(.*?)\n", regex.DOTALL) 
+        # For //XYZ structures
+        pattern2 = regex.compile(r"\/\/(.*?)\n", regex.DOTALL)
         result2 = regex.finditer(pattern2, self.cpp_content)
 
         self.list_commented = []
@@ -80,7 +78,7 @@ class Analysis:
         for match in result2:
             self.list_commented.append(match.span())
 
-        #print(list_commented)
+        # print(list_commented)
     
     def detectControlStructures(self):
         results = []
@@ -101,7 +99,8 @@ class Analysis:
                     result = regex.finditer(pattern, self.cpp_content)
                     results.append(result)
             else:
-                sys.exit(str("[Error] Group '" + str(group) + "' requested in config.json does not exist."))
+                sys.exit(str("[Error] Group '" + str(group) + "' requested in \
+                    config.json does not exist."))
         
         return results
 
@@ -113,15 +112,17 @@ class Analysis:
             for item in iterator:
                 result_list.append(item.span())
 
-        #2.2.4.1_Fehler#REAL
-        if(len(result_list) == 0): sys.exit("[Error] None of the requested control structres were detected")
-        #Sort list items by their ending position AND reverse it.
+        # 2.2.4.1_Fehler#REAL
+        if(len(result_list) == 0):
+            sys.exit("[Error] None of the requested ",
+                     "control structres were detected")
+        # Sort list items by their ending position AND reverse it.
         reversed_list = sorted(result_list, key=itemgetter(1), reverse=True)
         for match in reversed_list:
             start = match[0]
             insideComments = False
             
-            #Check if Statement is within comments
+            # Check if Statement is within comments
             for comments in self.list_commented:
                 if comments[0] <= start <= comments[1]:
                     insideComments = True
@@ -129,20 +130,22 @@ class Analysis:
             
             if (not insideComments):
                 end = match[1]
-                content_edited = content_edited[:end] + "/*X*/" + content_edited[end:]
+                content_edited = content_edited[:end] + "/*X*/" \
+                    + content_edited[end:]
         print(content_edited)
         return content_edited
-            
+
 
 config = Config()
 config.readConfig()
 
 detect = config.detect
 
-#If length of "detect" is 0
-#2.2.4.2_Fehler#REAL
+# If length of "detect" is 0
+# 2.2.4.2_Fehler#REAL
 if not len(detect):
-    sys.exit("[Info] Program closed - No control structure requested in JSON File")
+    sys.exit("[Info] Program closed - No control structure requested ",
+             "in JSON File")
 
 analysis = Analysis(detect)
 analysis.readCPP()
@@ -151,4 +154,4 @@ results = analysis.detectControlStructures()
 cpp_commented = analysis.validateDetection(results)
 with open("output.cpp", "w") as file:
     file.truncate()
-    file.write(cpp_commented)
+    file.write(cpp_commented)   
