@@ -3,7 +3,7 @@ Title:       Überprüfen der korrekten Erkennung von Kontrollstrukturen
 
 Description: Es soll getestet werden, ob die Kontrollstrukturerkennung von
              AKsE.py wie erwartet funktioniert. Hierfür markiert das Programm
-             die geforderten Kontrollstrukturen "while", "do while" und "for" 
+             die geforderten Kontrollstrukturen "if", "else if" und "else" 
              der Datei input.cpp mit /*X*/. Die bearbeitete Datei gibt es als 
              output.cpp aus. Die input.cpp und config.json Dateien werden für
              den Testfall manuell erstellt. Eine erwartete Ausgabe wird ebenfalls
@@ -25,13 +25,13 @@ Test method: Functional/Black-Box Test
 
 Action: 
     1) (Automatisches) generieren der Dateien "config.json", "input.cpp" und "output_expected.cpp".
-        Dabei beinhaltet "input.cpp" die Kontrollstrukturen "while", "do while" und "for". In der config.json
-        muss Punkt 3 unter "detect" angefordert sein.
+        Dabei beinhaltet "input.cpp" die Kontrollstrukturen "if", "else if" und "else". In der config.json
+        muss Punkt 1 unter "detect" angefordert sein.
     2) Starten des Programms AKsE.py
 
 Reaction:
     1) Ausgabe der Datei "output.cpp" durch "AKsE.py". Diese Datei enthält die Markierung an den jeweilig
-       angeforderten Kontrollstrukturen "do", "do while" und "for".
+       angeforderten Kontrollstrukturen "if", "else if" und "else".
     2) Vergleichen der Ausgabe ("output.cpp") mit der erwarteten Ausgabe ("output_expected.cpp")
 
 """

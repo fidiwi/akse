@@ -143,6 +143,7 @@ class Analysis:
         # Sort list items by their ending position AND reverse it.
         reversed_list = sorted(result_list, key=lambda x: x[1], reverse=True)  # REVIEW(BEM): Anstatt itemgetter kann man das auch mit einem Lambda machen, das ist lesbarer
                                                                                # AW(FRw): Änderung angenommen.
+        print(reversed_list)
         for match in reversed_list:
             start = match[0]
             insideComments = False
