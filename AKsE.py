@@ -137,7 +137,7 @@ class Analysis:
         # 2.2.4.1_Fehler#REAL
         # 2.2.5.2_Eingabe#REAL
         if(len(result_list) == 0):
-            sys.exit("[Error] None of the requested ",
+            sys.exit("[Error] None of the requested " +
                      "control structures were detected") # REVIEW(BEM): Tippfehler
                                                          # AW(FRW): Korrigiert.
         # Sort list items by their ending position AND reverse it.
@@ -163,27 +163,32 @@ class Analysis:
         return content_edited
 
 
-config = Config(config_path)
-config.readConfig()
+def startProgram():
 
-detect = config.detect
+    config = Config(config_path)
+    config.readConfig()
 
-# If length of "detect" is 0
-# 2.2.4.2_Fehler#REAL
-if not len(detect):
-    sys.exit("[Info] Program closed - No control structure requested ",
-             "in JSON File")
+    detect = config.detect
 
-analysis = Analysis(detect)
-content = analysis.readCPP(cpp_path) # REVIEW(BEM): Methoden ohne Parameter und ohne Rückgabewert machen eine Klasse meistens schwer benutzbar,
-# denn sie verändern interne Variablen, aber der Aufrufer bekommt nichts zurück. Das führt dazu, dass man wissen muss in welcher Reihenfolge 
-# man Methoden aufrufen muss (und eine falsche Reihenfolge führt wie oben angemerkt zu Fehlern). Das könnte man hier verbessern indem "readCpp"
-# cpp_content zurückgibt, und cpp_content dann als Paramter für detectCommentedCode dient, usw. (dadurch erzwingt man die richtige Reihenfolge)
-# AW(FRW): Abhängigkeiten zwischen den Methoden geschaffen.
-list_commented = analysis.detectCommentedCode(content)
-results = analysis.detectControlStructures(content)
-cpp_commented = analysis.validateDetection(content, list_commented, results)
+    # If length of "detect" is 0
+    # 2.2.4.2_Fehler#REAL
+    if not len(detect):
+        sys.exit("[Info] Program closed - No control structure requested ",
+                "in JSON File")
 
-with open("output.cpp", "w") as file:
-    file.truncate()
-    file.write(cpp_commented)
+    analysis = Analysis(detect)
+    content = analysis.readCPP(cpp_path) # REVIEW(BEM): Methoden ohne Parameter und ohne Rückgabewert machen eine Klasse meistens schwer benutzbar,
+    # denn sie verändern interne Variablen, aber der Aufrufer bekommt nichts zurück. Das führt dazu, dass man wissen muss in welcher Reihenfolge 
+    # man Methoden aufrufen muss (und eine falsche Reihenfolge führt wie oben angemerkt zu Fehlern). Das könnte man hier verbessern indem "readCpp"
+    # cpp_content zurückgibt, und cpp_content dann als Paramter für detectCommentedCode dient, usw. (dadurch erzwingt man die richtige Reihenfolge)
+    # AW(FRW): Abhängigkeiten zwischen den Methoden geschaffen.
+    list_commented = analysis.detectCommentedCode(content)
+    results = analysis.detectControlStructures(content)
+    cpp_commented = analysis.validateDetection(content, list_commented, results)
+
+    with open("output.cpp", "w") as file:
+        file.truncate()
+        file.write(cpp_commented)
+
+if __name__ == "__main__":
+    startProgram()
