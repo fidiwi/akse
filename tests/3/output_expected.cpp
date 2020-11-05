@@ -20,7 +20,7 @@ void loop(){
     } while(true);
 
     for (i = 0; i < a; i++)
-    {/*X*/
+    {/*X*//*X*/
         /* code */
     }
     

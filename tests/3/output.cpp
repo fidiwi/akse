@@ -15,12 +15,12 @@ void loop(){
         ;
     }
 
-    do{/*X*/
+    do{
         ;
-    } while(true);
+    } whie(true);
 
     for (i = 0; i < a; i++)
-    {/*X*//*X*/
+    {/*X*/
         /* code */
     }
     
