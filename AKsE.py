@@ -9,12 +9,15 @@ import regex # REVIEW(BEM): Möglichst "re" aus Standard-Bibliothek benutzen
 
 # re Singleline comments
 # \/\/(.*?)\n
+# 2.2.2#1
+# 2.2.2#2
+# 2.2.2#3
 config_path = "config.json"
 cpp_path = "input.cpp"
 
 pattern_if = r"if(\s*?)\((.*?)\)(\s*?)\{" # REVIEW(BEM): Funktioniert das auch bei so einer Zeile: if(a && (b || (c && d))) - also geschachtelte Klammern?
                                           # AW(FRW): Ja.
-pattern_else = r"(?<=if\s*\((.*?)\)\s*\{([\s\S]*?)\}(\s*?))else([\s\S]*?)\{" # REVIEW(BEM): Wenn ein Kommentar zwischen else und { funktioniert das nicht
+pattern_else = r"(?<!else\s*\{([\s\S]*?)\}\s*)(?<=if\s*\((.*?)\)\s*\{([\s\S]*?)\}(\s*?))else(\s*?)\{" # REVIEW(BEM): Wenn ein Kommentar zwischen else und { funktioniert das nicht
                                                                              # AW(FRW): Pattern verändert.
 pattern_elif = r"(?<=if\s*\((.*?)\)\s*\{([\s\S]*?)\}(\s*?))else\s*if(\s*?)"\
     r"\((.*?)\)(\s*?)\{"  # REVIEW(BEM): Bei Zeilenumbruch zwischen else und if funktioniert das nicht
@@ -46,9 +49,9 @@ patterns = [  # REVIEW(BEM): Diese Struktur ist ungünstig: warum 1,2,3? Warum a
      pattern_case,
      pattern_default]]
 
+
 # REVIEW(BEM): In dieser Klasse fehlt die Kommentierung (Wofür ist die Klasse da?)
 # AW(FRW): Beschreibung hinzugefügt.
-
 # Config class for reading in the config.json file and checking its format
 class Config:
 
@@ -63,7 +66,7 @@ class Config:
                 self.detect = data["detect"]               
             except Exception as e:  # REVIEW(BEM): Den Inhalt der Exception sollte man mit ausgeben, sonst weiß der Benutzer nicht was er falsch gemacht hat
                                     # AW(FRW): Änderung angenommen.
-                # 2.2.2.5_Konfigurationsdatei#REAL
+                # 2.2.2#5_Konfigurationsdatei#REAL
                 sys.exit("[Error] Could not load JSON File: " + str(e))
 
 
@@ -79,7 +82,7 @@ class Analysis:
 
     def readCPP(self, path): # REVIEW(BEM): Besser den Pfad zur Cpp-Datei als Parameter übergeben
                              # AW(FRW): Änderung angenommen.
-        # 2.2.5.1_Eingabe#REAL
+        # 2.2.5#1_Eingabe#REAL
         with open(path, "r") as cpp_file:
             cpp_content = cpp_file.read()
             return cpp_content
@@ -111,7 +114,7 @@ class Analysis:
 
     def detectControlStructures(self, cpp_content):
         results = []
-        # 2.2.1.1_Einschr#REAL
+        # 2.2.1#1_Einschr#REAL
         for group in self.detect:
             if group-1 in range(0, 3): 
                 for i in range(len(patterns[group-1])):  # REVIEW(BEM): siehe oben: 1/2/3 und a/b/c verstehe ich nicht. Außerdem enthält der Code in dieser Methode sehr viel Copy-Paste, also drei Mal das gleiche
@@ -120,7 +123,7 @@ class Analysis:
                     result = regex.finditer(pattern, cpp_content)
                     results.append(result)
             else:
-                # 2.2.2.4_Konfigurationsdatei#REAL
+                # 2.2.2#4_Konfigurationsdatei#REAL
                 sys.exit(str("[Error] Group '" + str(group) + "' requested in",
                              " config.json does not exist."))
         
@@ -134,8 +137,8 @@ class Analysis:
             for item in iterator:
                 result_list.append(item.span())
 
-        # 2.2.4.1_Fehler#REAL
-        # 2.2.5.2_Eingabe#REAL
+        # 2.2.4#1_Fehler#REAL
+        # 2.2.5#2_Eingabe#REAL
         if(len(result_list) == 0):
             sys.exit("[Error] None of the requested " +
                      "control structures were detected")  # REVIEW(BEM): Tippfehler
@@ -143,12 +146,13 @@ class Analysis:
         # Sort list items by their ending position AND reverse it.
         reversed_list = sorted(result_list, key=lambda x: x[1], reverse=True)  # REVIEW(BEM): Anstatt itemgetter kann man das auch mit einem Lambda machen, das ist lesbarer
                                                                                # AW(FRw): Änderung angenommen.
+        structures_marked = []
         for match in reversed_list:
             start = match[0]
             insideComments = False
             
             # Check if Statement is within comments
-            # 2.2.1.4_Einschr#REAL
+            # 2.2.1#4_Einschr#REAL
             for comments in list_commented:
                 if comments[0] <= start <= comments[1]:
                     insideComments = True
@@ -156,9 +160,11 @@ class Analysis:
             
             if (not insideComments):
                 end = match[1]
-                # 2.2.3_Markierung#REAL
-                content_edited = content_edited[:end] + "/*X*/" \
-                    + content_edited[end:]
+                if not end in structures_marked:
+                    # 2.2.3_Markierung#REAL
+                    content_edited = content_edited[:end] + "/*X*/" \
+                        + content_edited[end:]
+                    structures_marked.append(end)
         print(content_edited)
         return content_edited
 
@@ -171,7 +177,7 @@ def startProgram():
     detect = config.detect
 
     # If length of "detect" is 0
-    # 2.2.4.2_Fehler#REAL
+    # 2.2.4#2_Fehler#REAL
     if not len(detect):
         sys.exit("[Info] Program closed - No control structure requested ",
                  "in JSON File")
